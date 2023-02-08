@@ -1,4 +1,4 @@
-#TODO: CUSTOM ICON
+#TODO: basic powerup (points)
 
 #Libraries
 import pygame, time
@@ -16,7 +16,7 @@ KEY_FOCUS = pygame.K_z
 
 #Player values
 PLAYER_SPEED_NORMAL = 250   # pixel per frame
-PLAYER_SPEED_FOCUS = 150     # pixel per frame
+PLAYER_SPEED_FOCUS = 100     # pixel per frame
 
 #Window vars
 WINDOW_WIDTH = 1280
@@ -24,10 +24,12 @@ WINDOW_HEIGHT = 720
 WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 WINDOW_CAPTION = "simple bullethell"
 WINDOW_FILL_COLOR = (0,0,0)
+WINDOW_ICON = pygame.image.load("data/textures/icon.png")
 
 #Window creation
 WINDOW = pygame.display.set_mode(WINDOW_SIZE, pygame.NOFRAME)
 pygame.display.set_caption(WINDOW_CAPTION)
+pygame.display.set_icon(WINDOW_ICON)
 
 #Object default values
 DEFAULT_X = 0
@@ -99,9 +101,6 @@ mask[ID_TEXTURE_INGAMEUIBG] = pygame.mask.from_surface(texture[ID_TEXTURE_INGAME
 
 #Create the player [DEBUG]
 createObject(800,400,0,True,1,False,True,True)
-
-#Create the bullet [DEBUG]
-createObject(800,600,0,True,1,False,False,True)
 
 #Create the ingame ui bg
 createObject(0,0,9,True,ID_TEXTURE_INGAMEUIBG,False,False,True)
