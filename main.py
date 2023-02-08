@@ -1,4 +1,4 @@
-#TODO: CUSTOM ICON, MAP LIMIT
+#TODO: CUSTOM ICON, FIX COLLISION STUCK
 
 #Libraries
 import pygame, time
@@ -37,6 +37,7 @@ DEFAULT_ON = False
 DEFAULT_TEXTURE_ID = 0
 DEFAULT_FREE = True
 DEFAULT_KEYCONTROL = False
+DEFAULT_COLLIDE = False
 
 #Object arrays
 OBJECT_COUNT_MAX = 500
@@ -47,6 +48,7 @@ on = [DEFAULT_ON] * OBJECT_COUNT_MAX                                # need to re
 texture_id = [DEFAULT_TEXTURE_ID] * OBJECT_COUNT_MAX                # texture array index
 free = [DEFAULT_FREE] * OBJECT_COUNT_MAX                            # can be overwrited?
 keycontrol = [DEFAULT_KEYCONTROL] * OBJECT_COUNT_MAX                # moved by keyboard?
+collide = [DEFAULT_COLLIDE] * OBJECT_COUNT_MAX                      # collision enabled?
 
 #Find first free obj
 def freeObjectID():
@@ -62,7 +64,8 @@ def createObject(
                     _on = DEFAULT_ON,
                     _texture_id = DEFAULT_TEXTURE_ID,
                     _free = DEFAULT_FREE,
-                    _keycontrol = DEFAULT_KEYCONTROL
+                    _keycontrol = DEFAULT_KEYCONTROL,
+                    _collide = DEFAULT_COLLIDE
                 ):
     id = freeObjectID()
     x[id] = _x
@@ -72,6 +75,7 @@ def createObject(
     texture_id[id] = _texture_id
     free[id] = _free
     keycontrol[id] = _keycontrol
+    collide[id] = _collide
 
 #Z Layers
 Z_LAYER_COUNT = 10
@@ -88,11 +92,19 @@ texture[ID_TEXTURE_DEFAULT] = pygame.image.load("data/textures/default.png")
 texture[ID_TEXTURE_PLAYER] = pygame.image.load("data/textures/player.png")
 texture[ID_TEXTURE_INGAMEUIBG] = pygame.image.load("data/textures/ingame_ui_bg.png")
 
+#Collision Mask array (IDs same as textures)
+mask = [None] * TEXTURE_COUNT
+mask[ID_TEXTURE_PLAYER] = pygame.mask.from_surface(texture[ID_TEXTURE_PLAYER])
+mask[ID_TEXTURE_INGAMEUIBG] = pygame.mask.from_surface(texture[ID_TEXTURE_INGAMEUIBG])
+
 #Create the player [DEBUG]
-createObject(800,400,0,True,1,False,True)
+createObject(800,400,0,True,1,False,True,True)
+
+#Create the bullet [DEBUG]
+createObject(800,600,0,True,1,False,False,True)
 
 #Create the ingame ui bg
-createObject(0,0,9,True,ID_TEXTURE_INGAMEUIBG,False,False)
+createObject(0,0,9,True,ID_TEXTURE_INGAMEUIBG,False,False,True)
 
 # !!! NEEDS TO BE LAST INIT CALL !!!
 clockfix_now = 0
@@ -135,9 +147,38 @@ while running_flag:
             if pressed_keys[KEY_FOCUS]: speed = PLAYER_SPEED_FOCUS
             else: speed = PLAYER_SPEED_NORMAL
 
+            # precalculate next frame pos
             # speed * input dir * delta = frame motion
-            x[obj] += speed * input_dir_x * clockfix_dt
-            y[obj] += speed * input_dir_y * clockfix_dt
+            next_x = x[obj] + (speed * input_dir_x * clockfix_dt)
+            next_y = y[obj] + (speed * input_dir_y * clockfix_dt)
+
+            # collision flag
+            collision_flag = False
+
+            # check collision
+            if collide[obj]:
+                
+                # check other rendered colliders
+                for obs in range(OBJECT_COUNT_MAX):
+
+                    #Ignore self
+                    if obs == obj:
+                        continue
+
+                    if collide[obs]:
+                        if on[obs]:
+                            
+                            # calculate mask offset
+                            off_x = x[obs] - x[obj]
+                            off_y = y[obs] - y[obj]
+
+                            # check overlapping points
+                            if mask[texture_id[obj]].overlap(mask[texture_id[obs]], (off_x, off_y)):
+                                collision_flag = True
+            
+            if not collision_flag:
+                x[obj] = next_x
+                y[obj] = next_y
     
     #Render system
     WINDOW.fill(WINDOW_FILL_COLOR)  # clear
