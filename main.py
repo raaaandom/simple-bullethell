@@ -16,7 +16,7 @@ KEY_FOCUS = pygame.K_z
 
 #Player values
 PLAYER_SPEED_NORMAL = 250   # pixel per frame
-PLAYER_SPEED_FOCUS = 100     # pixel per frame
+PLAYER_SPEED_FOCUS = 100    # pixel per frame
 
 #Window vars
 WINDOW_WIDTH = 1280
@@ -186,7 +186,6 @@ while running_flag:
                 x[obj] = next_x
             if not collision_flag_y:
                 y[obj] = next_y
-                
     
     #Render system
     WINDOW.fill(WINDOW_FILL_COLOR)  # clear
