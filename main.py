@@ -161,12 +161,13 @@ while running_flag:
                 # check other rendered colliders
                 for obs in range(OBJECT_COUNT_MAX):
 
-                    #Ignore self
+                    # ignore self
                     if obs == obj:
                         continue
 
+                    # collision check
                     if collide[obs]:
-                        if on[obs]:
+                        if on[obs]: # only on rendered 
                             
                             # calculate mask offset for both current and next frame
                             next_off_x = x[obs] - next_x
