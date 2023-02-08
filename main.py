@@ -1,4 +1,4 @@
-#TODO: CUSTOM ICON, FIX COLLISION STUCK
+#TODO: CUSTOM ICON
 
 #Libraries
 import pygame, time
@@ -153,7 +153,8 @@ while running_flag:
             next_y = y[obj] + (speed * input_dir_y * clockfix_dt)
 
             # collision flag
-            collision_flag = False
+            collision_flag_x = False
+            collision_flag_y = False
 
             # check collision
             if collide[obj]:
@@ -168,17 +169,24 @@ while running_flag:
                     if collide[obs]:
                         if on[obs]:
                             
-                            # calculate mask offset
+                            # calculate mask offset for both current and next frame
+                            next_off_x = x[obs] - next_x
+                            next_off_y = y[obs] - next_y
                             off_x = x[obs] - x[obj]
                             off_y = y[obs] - y[obj]
 
-                            # check overlapping points
-                            if mask[texture_id[obj]].overlap(mask[texture_id[obs]], (off_x, off_y)):
-                                collision_flag = True
+                            # check overlapping points in both x and y axis
+                            if mask[texture_id[obj]].overlap(mask[texture_id[obs]], (next_off_x, off_y)):
+                                collision_flag_x = True
+                            if mask[texture_id[obj]].overlap(mask[texture_id[obs]], (off_x, next_off_y)):
+                                collision_flag_y = True
             
-            if not collision_flag:
+            # if there's no collision then update the position
+            if not collision_flag_x:
                 x[obj] = next_x
+            if not collision_flag_y:
                 y[obj] = next_y
+                
     
     #Render system
     WINDOW.fill(WINDOW_FILL_COLOR)  # clear
