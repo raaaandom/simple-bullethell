@@ -1,4 +1,4 @@
-#TODO: basic powerup (points)
+#TODO: basic powerup (points), collision fix on high pixel per sec
 
 #Libraries
 import pygame, time
@@ -15,8 +15,8 @@ KEY_MOVE_DOWN = pygame.K_DOWN
 KEY_FOCUS = pygame.K_z
 
 #Player values
-PLAYER_SPEED_NORMAL = 250   # pixel per frame
-PLAYER_SPEED_FOCUS = 100    # pixel per frame
+PLAYER_SPEED_NORMAL = 250   # pixel per second
+PLAYER_SPEED_FOCUS = 100    # pixel per second
 
 #Window vars
 WINDOW_WIDTH = 1280
@@ -51,6 +51,20 @@ texture_id = [DEFAULT_TEXTURE_ID] * OBJECT_COUNT_MAX                # texture ar
 free = [DEFAULT_FREE] * OBJECT_COUNT_MAX                            # can be overwrited?
 keycontrol = [DEFAULT_KEYCONTROL] * OBJECT_COUNT_MAX                # moved by keyboard?
 collide = [DEFAULT_COLLIDE] * OBJECT_COUNT_MAX                      # collision enabled?
+
+#Check collision between two objects
+def checkCollision(obj1, obj2, offx=None, offy=None):
+    
+    if offx == None:
+        offx = x[obj2]-x[obj1]
+
+    if offy == None:
+        offy = y[obj2]-y[obj1]
+    
+    if mask[texture_id[obj1]].overlap(mask[texture_id[obj2]], (offx, offy)):
+        return True
+
+    return False
 
 #Find first free obj
 def freeObjectID():
@@ -169,17 +183,13 @@ while running_flag:
                     if collide[obs]:
                         if on[obs]: # only on rendered 
                             
-                            # calculate mask offset for both current and next frame
+                            # calculate mask offset for next frame
                             next_off_x = x[obs] - next_x
                             next_off_y = y[obs] - next_y
-                            off_x = x[obs] - x[obj]
-                            off_y = y[obs] - y[obj]
 
                             # check overlapping points in both x and y axis
-                            if mask[texture_id[obj]].overlap(mask[texture_id[obs]], (next_off_x, off_y)):
-                                collision_flag_x = True
-                            if mask[texture_id[obj]].overlap(mask[texture_id[obs]], (off_x, next_off_y)):
-                                collision_flag_y = True
+                            collision_flag_x = checkCollision(obj, obs, offx=next_off_x)
+                            collision_flag_y = checkCollision(obj, obs, offy=next_off_y)
             
             # if there's no collision then update the position
             if not collision_flag_x:
