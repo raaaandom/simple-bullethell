@@ -1,4 +1,4 @@
-#TODO: basic powerup (points)
+#TODO: show points in gui
 #TODO: collision fix on high pixel per sec
 
 #Libraries
