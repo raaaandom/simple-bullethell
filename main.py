@@ -1,5 +1,17 @@
-#TODO: make variable support in new font object
 #TODO: collision fix on high pixel per sec
+
+#Pointer recreation in python (only way to recreate pointer concept)
+#this one is useful when displaying variable values in rendered fonts
+class Pointer():
+
+    def __init__(self, value) -> None:
+        self.value = value
+
+    def get_value(self):
+        return self.value
+    
+    def set_value(self, value):
+        self.value = value
 
 #Libraries
 import pygame, time
@@ -41,7 +53,7 @@ POWERUP_WEAPON = 2
 POWERUP_CHARGE = 3
 
 # in game points var (increments with point powerup)
-points = 0
+points = Pointer(0)
 
 #Object default values
 DEFAULT_X = 0
@@ -59,6 +71,7 @@ DEFAULT_FONT_ID = None
 DEFAULT_FONT_TEXT = ""
 DEFAULT_FONT_AA = False
 DEFAULT_FONT_COLOR = (255,255,255)
+DEFAULT_FONT_REPLACES = []
 
 #Object arrays
 OBJECT_COUNT_MAX = 500
@@ -77,6 +90,7 @@ font_id = [DEFAULT_FONT_ID] * OBJECT_COUNT_MAX                      # font used 
 font_text = [DEFAULT_FONT_TEXT] * OBJECT_COUNT_MAX                  # text to render
 font_color = [DEFAULT_FONT_COLOR] * OBJECT_COUNT_MAX                # color to render the text with
 font_aa = [DEFAULT_FONT_AA] * OBJECT_COUNT_MAX                      # should use antialiasing?
+font_replaces = [DEFAULT_FONT_REPLACES] * OBJECT_COUNT_MAX          # list of pointers with variable values to display in string
 
 #Check collision between two objects
 def checkCollision(obj1, obj2, offx=None, offy=None):
@@ -118,7 +132,8 @@ def createObject(
                     _font_id = DEFAULT_FONT_ID,
                     _font_text = DEFAULT_FONT_TEXT,
                     _font_color = DEFAULT_FONT_COLOR,
-                    _font_aa = DEFAULT_FONT_AA
+                    _font_aa = DEFAULT_FONT_AA,
+                    _font_replaces = DEFAULT_FONT_REPLACES
                 ):
     id = freeObjectID()
     x[id] = _x
@@ -136,11 +151,13 @@ def createObject(
     font_text[id] = _font_text
     font_color[id] = _font_color
     font_aa[id] = _font_aa
+    font_replaces[id] = _font_replaces
 
 #Z Layers
 Z_LAYER_COUNT = 10
 
 #Font values
+FONT_VAR_PLACEHOLDER = "$x"
 FONT_COUNT = 20
 
 ID_FONT_CIRNO = 1
@@ -212,9 +229,10 @@ _x=50,
 _y=50,
 _z=9,
 _font_id=ID_FONT_CIRNO,
-_font_text="Test :)",
+_font_text="Points: $x",
 _font_color=(255,255,255),
-_font_aa=True
+_font_aa=True,
+_font_replaces=[points]
 )
 
 # !!! NEEDS TO BE LAST INIT CALL !!!
@@ -309,7 +327,7 @@ while running_flag:
 
                             #POINTS POWERUP
                             if powerup[obj1] == POWERUP_POINT:
-                                points += powerup_amount[obj1]
+                                points.set_value(points.get_value() + powerup_amount[obj1])
                             
                             #CLEAR POWERUP
                             deleteObject(obj1)
@@ -325,7 +343,14 @@ while running_flag:
                     if font_id[obj] == None:
                         WINDOW.blit(texture[texture_id[obj]], (x[obj], y[obj])) # render object
                     else:
-                        WINDOW.blit( font[font_id[obj]].render(font_text[obj],font_aa[obj],font_color[obj]) , (x[obj], y[obj])) # render font
+
+                        temp = font_text[obj]
+                        
+                        for i in range(len(font_replaces[obj])): #replace all var placeholder occurrencies
+                            temp = temp.replace(FONT_VAR_PLACEHOLDER, str(font_replaces[obj][i].get_value()))
+
+                        WINDOW.blit( font[font_id[obj]].render(temp,font_aa[obj],font_color[obj]) , (x[obj], y[obj])) # render font
+                        
     
     pygame.display.flip()   # update
 
