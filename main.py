@@ -1,8 +1,11 @@
-#TODO: show points in gui
+#TODO: make variable support in new font object
 #TODO: collision fix on high pixel per sec
 
 #Libraries
 import pygame, time
+
+#Initialize pygame
+pygame.init()
 
 #FPS related stuff
 CLOCK_TOOL = pygame.time.Clock()
@@ -52,6 +55,10 @@ DEFAULT_COLLIDE = False
 DEFAULT_POWERUP = None
 DEFAULT_POWERUP_AMOUNT = 0
 DEFAULT_POWERUP_PICKUP = False
+DEFAULT_FONT_ID = None
+DEFAULT_FONT_TEXT = ""
+DEFAULT_FONT_AA = False
+DEFAULT_FONT_COLOR = (255,255,255)
 
 #Object arrays
 OBJECT_COUNT_MAX = 500
@@ -66,6 +73,10 @@ collide = [DEFAULT_COLLIDE] * OBJECT_COUNT_MAX                      # collision 
 powerup = [DEFAULT_POWERUP] * OBJECT_COUNT_MAX                      # powerup type (point, charge ...) 
 powerup_amount = [DEFAULT_POWERUP_AMOUNT] * OBJECT_COUNT_MAX        # powerup value (tot points, charge...)
 powerup_pickup = [DEFAULT_POWERUP_PICKUP] * OBJECT_COUNT_MAX        # should pickup powerups?
+font_id = [DEFAULT_FONT_ID] * OBJECT_COUNT_MAX                      # font used to render text
+font_text = [DEFAULT_FONT_TEXT] * OBJECT_COUNT_MAX                  # text to render
+font_color = [DEFAULT_FONT_COLOR] * OBJECT_COUNT_MAX                # color to render the text with
+font_aa = [DEFAULT_FONT_AA] * OBJECT_COUNT_MAX                      # should use antialiasing?
 
 #Check collision between two objects
 def checkCollision(obj1, obj2, offx=None, offy=None):
@@ -103,7 +114,11 @@ def createObject(
                     _collide = DEFAULT_COLLIDE,
                     _powerup = DEFAULT_POWERUP,
                     _powerup_amount = DEFAULT_POWERUP_AMOUNT,
-                    _powerup_pickup = DEFAULT_POWERUP_PICKUP
+                    _powerup_pickup = DEFAULT_POWERUP_PICKUP,
+                    _font_id = DEFAULT_FONT_ID,
+                    _font_text = DEFAULT_FONT_TEXT,
+                    _font_color = DEFAULT_FONT_COLOR,
+                    _font_aa = DEFAULT_FONT_AA
                 ):
     id = freeObjectID()
     x[id] = _x
@@ -117,9 +132,23 @@ def createObject(
     powerup[id] = _powerup
     powerup_amount[id] = _powerup_amount
     powerup_pickup[id] = _powerup_pickup
+    font_id[id] = _font_id
+    font_text[id] = _font_text
+    font_color[id] = _font_color
+    font_aa[id] = _font_aa
 
 #Z Layers
 Z_LAYER_COUNT = 10
+
+#Font values
+FONT_COUNT = 20
+
+ID_FONT_CIRNO = 1
+HEIGHT_FONT_CIRNO = 32
+
+#Font array
+font = [None] * FONT_COUNT
+font[ID_FONT_CIRNO] = pygame.font.Font("data/fonts/cirno.ttf", HEIGHT_FONT_CIRNO)
 
 #Texture values
 TEXTURE_COUNT = 500
@@ -162,7 +191,7 @@ _powerup_pickup=True
 createObject(
 _x=0,
 _y=0,
-_z=9,
+_z=8,
 _texture_id=ID_TEXTURE_INGAMEUIBG,
 _collide=True
 )
@@ -175,6 +204,17 @@ _z=3,
 _texture_id=ID_TEXTURE_POINT,
 _powerup=POWERUP_POINT,
 _powerup_amount=1
+)
+
+#Create ui text
+createObject(
+_x=50,
+_y=50,
+_z=9,
+_font_id=ID_FONT_CIRNO,
+_font_text="Test :)",
+_font_color=(255,255,255),
+_font_aa=True
 )
 
 # !!! NEEDS TO BE LAST INIT CALL !!!
@@ -276,11 +316,17 @@ while running_flag:
 
     #Render system
     WINDOW.fill(WINDOW_FILL_COLOR)  # clear
+
     for _z in range(Z_LAYER_COUNT): # sort z layer
         for obj in range(OBJECT_COUNT_MAX): # loop objects
             if z[obj] == _z:                    # if both on same z layer
                 if on[obj]:                         # if on
-                    WINDOW.blit(texture[texture_id[obj]], (x[obj], y[obj])) # render it
+
+                    if font_id[obj] == None:
+                        WINDOW.blit(texture[texture_id[obj]], (x[obj], y[obj])) # render object
+                    else:
+                        WINDOW.blit( font[font_id[obj]].render(font_text[obj],font_aa[obj],font_color[obj]) , (x[obj], y[obj])) # render font
+    
     pygame.display.flip()   # update
 
 #On game close, call pygame.quit
