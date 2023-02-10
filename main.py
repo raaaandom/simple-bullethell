@@ -1,5 +1,4 @@
 #TODO: collision fix on high pixel per sec
-#TODO: on tot points gain a life and multiply by 2 the goal
 
 #Pointer recreation in python (only way to recreate pointer concept)
 #this one is useful when displaying variable values in rendered fonts
