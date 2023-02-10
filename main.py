@@ -49,7 +49,7 @@ WINDOW_FILL_COLOR = (0,0,0)
 WINDOW_ICON = pygame.image.load("data/textures/icon.png")
 
 #Window creation
-WINDOW = pygame.display.set_mode(WINDOW_SIZE, pygame.NOFRAME)
+WINDOW = pygame.display.set_mode(WINDOW_SIZE, pygame.FULLSCREEN)
 pygame.display.set_caption(WINDOW_CAPTION)
 pygame.display.set_icon(WINDOW_ICON)
 
@@ -60,7 +60,7 @@ POWERUP_CHARGE = 3
 
 # in game points var (increments with point powerup)
 points = Pointer(0)
-points_goal = Pointer(3)
+points_goal = Pointer(50)
 
 # life var
 life = Pointer(0)
@@ -223,16 +223,6 @@ _texture_id=ID_TEXTURE_INGAMEUIBG,
 _collide=True
 )
 
-#Create powerup [debug]
-createObject(
-_x=600,
-_y=300,
-_z=3,
-_texture_id=ID_TEXTURE_POINT,
-_powerup=POWERUP_POINT,
-_powerup_amount=1
-)
-
 #Create ui text
 createObject(
 _x=50,
@@ -321,6 +311,8 @@ while running_flag:
                     if collide[obs]:
                         if on[obs]: # only on rendered 
                             
+                            #TODO: pixel per pixel check
+
                             # calculate mask offset for next frame
                             next_off_x = x[obs] - next_x
                             next_off_y = y[obs] - next_y
@@ -359,16 +351,6 @@ while running_flag:
                             
                             #CLEAR POWERUP
                             deleteObject(obj1)
-
-                            #Create powerup [debug]
-                            createObject(
-                            _x=random.randrange(400,700),
-                            _y=random.randrange(350,500),
-                            _z=3,
-                            _texture_id=ID_TEXTURE_POINT,
-                            _powerup=POWERUP_POINT,
-                            _powerup_amount=1
-                            )
 
     #Render system
     WINDOW.fill(WINDOW_FILL_COLOR)  # clear
