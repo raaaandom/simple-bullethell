@@ -1,4 +1,5 @@
 #TODO: collision fix on high pixel per sec
+#TODO: on tot points gain a life and multiply by 2 the goal
 
 #Pointer recreation in python (only way to recreate pointer concept)
 #this one is useful when displaying variable values in rendered fonts
@@ -12,9 +13,15 @@ class Pointer():
     
     def set_value(self, value):
         self.value = value
+    
+    def add_value(self, value):
+        self.value += value
+    
+    def mul_value(self, value):
+        self.value *= value
 
 #Libraries
-import pygame, time
+import pygame, time, random
 
 #Initialize pygame
 pygame.init()
@@ -54,6 +61,10 @@ POWERUP_CHARGE = 3
 
 # in game points var (increments with point powerup)
 points = Pointer(0)
+points_goal = Pointer(3)
+
+# life var
+life = Pointer(0)
 
 #Object default values
 DEFAULT_X = 0
@@ -229,10 +240,22 @@ _x=50,
 _y=50,
 _z=9,
 _font_id=ID_FONT_CIRNO,
-_font_text="Points: $x",
+_font_text="Points: $x / $x",
 _font_color=(255,255,255),
 _font_aa=True,
-_font_replaces=[points]
+_font_replaces=[points, points_goal]
+)
+
+#Create ui text
+createObject(
+_x=50,
+_y=75,
+_z=9,
+_font_id=ID_FONT_CIRNO,
+_font_text="Life: $x",
+_font_color=(255,255,255),
+_font_aa=True,
+_font_replaces=[life]
 )
 
 # !!! NEEDS TO BE LAST INIT CALL !!!
@@ -313,6 +336,12 @@ while running_flag:
             if not collision_flag_y:
                 y[obj] = next_y
 
+    #Check if you have enough points to get a life
+    if points.get_value() >= points_goal.get_value():
+        points_goal.mul_value(2)
+        life.add_value(1)
+        
+
     #Manage powerups
     for obj1 in range(OBJECT_COUNT_MAX):
         if powerup[obj1] != None: # if it is a powerup
@@ -327,10 +356,20 @@ while running_flag:
 
                             #POINTS POWERUP
                             if powerup[obj1] == POWERUP_POINT:
-                                points.set_value(points.get_value() + powerup_amount[obj1])
+                                points.add_value(powerup_amount[obj1])
                             
                             #CLEAR POWERUP
                             deleteObject(obj1)
+
+                            #Create powerup [debug]
+                            createObject(
+                            _x=random.randrange(400,700),
+                            _y=random.randrange(350,500),
+                            _z=3,
+                            _texture_id=ID_TEXTURE_POINT,
+                            _powerup=POWERUP_POINT,
+                            _powerup_amount=1
+                            )
 
     #Render system
     WINDOW.fill(WINDOW_FILL_COLOR)  # clear
@@ -347,7 +386,7 @@ while running_flag:
                         temp = font_text[obj]
                         
                         for i in range(len(font_replaces[obj])): #replace all var placeholder occurrencies
-                            temp = temp.replace(FONT_VAR_PLACEHOLDER, str(font_replaces[obj][i].get_value()))
+                            temp = temp.replace(FONT_VAR_PLACEHOLDER, str(font_replaces[obj][i].get_value()),1)
 
                         WINDOW.blit( font[font_id[obj]].render(temp,font_aa[obj],font_color[obj]) , (x[obj], y[obj])) # render font
                         
