@@ -1,5 +1,3 @@
-#TODO: collision fix on high pixel per sec
-
 #Pointer recreation in python (only way to recreate pointer concept)
 #this one is useful when displaying variable values in rendered fonts
 class Pointer():
@@ -35,6 +33,7 @@ KEY_MOVE_RIGHT = pygame.K_RIGHT
 KEY_MOVE_UP = pygame.K_UP
 KEY_MOVE_DOWN = pygame.K_DOWN
 KEY_FOCUS = pygame.K_z
+KEY_FULLSCREEN = pygame.K_F4
 
 #Player values
 PLAYER_SPEED_NORMAL = 250   # pixel per second
@@ -47,11 +46,21 @@ WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 WINDOW_CAPTION = "simple bullethell"
 WINDOW_FILL_COLOR = (0,0,0)
 WINDOW_ICON = pygame.image.load("data/textures/icon.png")
+WINDOW_FULLSCREEN = True
 
 #Window creation
-WINDOW = pygame.display.set_mode(WINDOW_SIZE, pygame.FULLSCREEN)
+
+if(WINDOW_FULLSCREEN):
+    WINDOW = pygame.display.set_mode(WINDOW_SIZE, pygame.FULLSCREEN)
+else:
+    WINDOW = pygame.display.set_mode(WINDOW_SIZE)
+
 pygame.display.set_caption(WINDOW_CAPTION)
 pygame.display.set_icon(WINDOW_ICON)
+
+#GLOBAL FLAGS
+key_fullscreen_flag = False
+fullscreen_status = WINDOW_FULLSCREEN
 
 #Powerup values
 POWERUP_POINT = 1
@@ -271,7 +280,22 @@ while running_flag:
     
     #Get frame's input
     pressed_keys = pygame.key.get_pressed()
-    
+
+    #Toggle fullscreen
+    if pressed_keys[KEY_FULLSCREEN] and not key_fullscreen_flag:
+        
+        fullscreen_flag = True
+
+        if fullscreen_status:
+            pygame.display.set_mode(WINDOW_SIZE)
+        else:
+            pygame.display.set_mode(WINDOW_SIZE, pygame.FULLSCREEN)
+
+        fullscreen_status = not fullscreen_status
+
+    elif not pressed_keys[KEY_FULLSCREEN] and key_fullscreen_flag:
+        fullscreen_flag = False
+        
     #keyboard movement
     for obj in range(OBJECT_COUNT_MAX):
         if keycontrol[obj]:
