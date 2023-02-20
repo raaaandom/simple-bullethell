@@ -1,3 +1,5 @@
+#TODO: Immortality frames
+
 #Pointer recreation in python (only way to recreate pointer concept)
 #this one is useful when displaying variable values in rendered fonts
 class Pointer():
@@ -18,7 +20,7 @@ class Pointer():
         self.value *= value
 
 #Libraries
-import pygame, time, random
+import pygame, time
 
 #Initialize pygame
 pygame.init()
@@ -33,7 +35,7 @@ KEY_MOVE_RIGHT = pygame.K_RIGHT
 KEY_MOVE_UP = pygame.K_UP
 KEY_MOVE_DOWN = pygame.K_DOWN
 KEY_FOCUS = pygame.K_z
-KEY_FULLSCREEN = pygame.K_F4
+KEY_FULLSCREEN = pygame.K_F12
 
 #Player values
 PLAYER_SPEED_NORMAL = 250   # pixel per second
@@ -46,7 +48,7 @@ WINDOW_SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 WINDOW_CAPTION = "simple bullethell"
 WINDOW_FILL_COLOR = (0,0,0)
 WINDOW_ICON = pygame.image.load("data/textures/icon.png")
-WINDOW_FULLSCREEN = True
+WINDOW_FULLSCREEN = False
 
 #Window creation
 
@@ -67,12 +69,18 @@ POWERUP_POINT = 1
 POWERUP_WEAPON = 2
 POWERUP_CHARGE = 3
 
+#default stats
+STARTING_POINTS = 0
+STARTING_GOAL = 50
+STARTING_LIFE = 3
+POST_HIT_IMMORTALITY = 2.5
+
 # in game points var (increments with point powerup)
-points = Pointer(0)
-points_goal = Pointer(50)
+points = Pointer(STARTING_POINTS)
+points_goal = Pointer(STARTING_GOAL)
 
 # life var
-life = Pointer(0)
+life = Pointer(STARTING_LIFE)
 
 #Object default values
 DEFAULT_X = 0
@@ -91,6 +99,9 @@ DEFAULT_FONT_TEXT = ""
 DEFAULT_FONT_AA = False
 DEFAULT_FONT_COLOR = (255,255,255)
 DEFAULT_FONT_REPLACES = []
+DEFAULT_TAKES_DAMAGE = False
+DEFAULT_INFLICTS_DAMAGE = False
+DEFAULT_DAMAGE = None
 
 #Object arrays
 OBJECT_COUNT_MAX = 500
@@ -110,6 +121,9 @@ font_text = [DEFAULT_FONT_TEXT] * OBJECT_COUNT_MAX                  # text to re
 font_color = [DEFAULT_FONT_COLOR] * OBJECT_COUNT_MAX                # color to render the text with
 font_aa = [DEFAULT_FONT_AA] * OBJECT_COUNT_MAX                      # should use antialiasing?
 font_replaces = [DEFAULT_FONT_REPLACES] * OBJECT_COUNT_MAX          # list of pointers with variable values to display in string
+takes_damage = [DEFAULT_TAKES_DAMAGE] * OBJECT_COUNT_MAX            # should it take damage from damage sources?
+inflicts_damage = [DEFAULT_INFLICTS_DAMAGE] * OBJECT_COUNT_MAX      # should it inflict damage to other object?
+damage = [DEFAULT_DAMAGE] * OBJECT_COUNT_MAX                        # the amount of damage inflicted to others
 
 #Check collision between two objects
 def checkCollision(obj1, obj2, offx=None, offy=None):
@@ -152,7 +166,10 @@ def createObject(
                     _font_text = DEFAULT_FONT_TEXT,
                     _font_color = DEFAULT_FONT_COLOR,
                     _font_aa = DEFAULT_FONT_AA,
-                    _font_replaces = DEFAULT_FONT_REPLACES
+                    _font_replaces = DEFAULT_FONT_REPLACES,
+                    _takes_damage = DEFAULT_TAKES_DAMAGE,
+                    _inflicts_damage = DEFAULT_INFLICTS_DAMAGE,
+                    _damage = DEFAULT_DAMAGE
                 ):
     id = freeObjectID()
     x[id] = _x
@@ -171,6 +188,9 @@ def createObject(
     font_color[id] = _font_color
     font_aa[id] = _font_aa
     font_replaces[id] = _font_replaces
+    takes_damage[id] = _takes_damage
+    inflicts_damage[id] = _inflicts_damage
+    damage[id] = _damage
 
 #Z Layers
 Z_LAYER_COUNT = 10
@@ -220,7 +240,18 @@ _z=4,
 _texture_id=ID_TEXTURE_PLAYER,
 _keycontrol=True,
 _collide=True,
-_powerup_pickup=True
+_powerup_pickup=True,
+_takes_damage=True
+)
+
+#Create the enemy
+createObject(
+_x=700,
+_y=400,
+_z=3,
+_texture_id=ID_TEXTURE_PLAYER,
+_inflicts_damage=True,
+_damage = 1
 )
 
 #Create the ingame ui bg
@@ -250,7 +281,7 @@ _x=50,
 _y=75,
 _z=9,
 _font_id=ID_FONT_CIRNO,
-_font_text="Life: $x",
+_font_text="Health: $x",
 _font_color=(255,255,255),
 _font_aa=True,
 _font_replaces=[life]
@@ -355,7 +386,28 @@ while running_flag:
     if points.get_value() >= points_goal.get_value():
         points_goal.mul_value(2)
         life.add_value(1)
+    
+
+    #Manage damage
+    for obj1 in range(OBJECT_COUNT_MAX):
         
+        if not takes_damage[obj1] or not on[obj1]:
+            continue
+
+        for obj2 in range(OBJECT_COUNT_MAX):
+
+            if not inflicts_damage[obj2] or not on[obj2]:
+                continue
+
+            if obj1 == obj2:
+                continue
+
+            #obj1 = victim
+            #obj2 = hazard
+
+            if checkCollision(obj1, obj2):
+                life.add_value(-damage[obj2])
+
 
     #Manage powerups
     for obj1 in range(OBJECT_COUNT_MAX):
