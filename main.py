@@ -3,6 +3,8 @@
 # TODO: dialoghi (indagare come fare font renderer che va a capo)
 # TODO: vedere come funziona musica su pygame
 # TODO: iniziare a pensare a un level editor
+# TODO: sparo giocatore
+# TODO: takes_damage_notplayer e health_value come attributi degli obj
 
 
 #Pointer recreation in python (only way to recreate pointer concept)
