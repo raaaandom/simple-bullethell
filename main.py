@@ -1,5 +1,3 @@
-#TODO: Immortality frames
-
 #Pointer recreation in python (only way to recreate pointer concept)
 #this one is useful when displaying variable values in rendered fonts
 class Pointer():
@@ -74,6 +72,9 @@ STARTING_POINTS = 0
 STARTING_GOAL = 50
 STARTING_LIFE = 3
 POST_HIT_IMMORTALITY = 2.5
+
+#immortality frame stuff
+last_hit_timestamp = time.time()
 
 # in game points var (increments with point powerup)
 points = Pointer(STARTING_POINTS)
@@ -405,7 +406,12 @@ while running_flag:
             #obj1 = victim
             #obj2 = hazard
 
+            #IMMORTALITY TIME
+            if time.time() - last_hit_timestamp < 2.5:
+                continue
+
             if checkCollision(obj1, obj2):
+                last_hit_timestamp = time.time()
                 life.add_value(-damage[obj2])
 
 
