@@ -103,6 +103,11 @@ DEFAULT_FONT_REPLACES = []
 DEFAULT_TAKES_DAMAGE = False
 DEFAULT_INFLICTS_DAMAGE = False
 DEFAULT_DAMAGE = None
+DEFAULT_ANI_CURRENT_ID = None
+DEFAULT_ANI_ELAPSED_TIME = None
+DEFAULT_ANI_CURRENT_STEP = None
+DEFAULT_TAG = []
+DEFAULT_BACKUP_TEXTURE = None
 
 #Object arrays
 OBJECT_COUNT_MAX = 500
@@ -125,6 +130,24 @@ font_replaces = [DEFAULT_FONT_REPLACES] * OBJECT_COUNT_MAX          # list of po
 takes_damage = [DEFAULT_TAKES_DAMAGE] * OBJECT_COUNT_MAX            # should it take damage from damage sources?
 inflicts_damage = [DEFAULT_INFLICTS_DAMAGE] * OBJECT_COUNT_MAX      # should it inflict damage to other object?
 damage = [DEFAULT_DAMAGE] * OBJECT_COUNT_MAX                        # the amount of damage inflicted to others
+ani_current_id = [DEFAULT_ANI_CURRENT_ID] * OBJECT_COUNT_MAX        # current animation
+ani_current_step = [DEFAULT_ANI_CURRENT_STEP] * OBJECT_COUNT_MAX    # current animation step
+ani_elapsed_time = [DEFAULT_ANI_ELAPSED_TIME] * OBJECT_COUNT_MAX    # elapsed time since last ani step
+tag = [DEFAULT_TAG] * OBJECT_COUNT_MAX                              # tags used to quickly access a type of obj
+backup_texture = [DEFAULT_BACKUP_TEXTURE] * OBJECT_COUNT_MAX        # used when restoring a static frame from ani
+
+#starts an animation on the desired obj
+def startAnimation(obj, aniID):
+    ani_current_id[obj] = aniID
+    ani_current_step[obj] = 0
+    ani_elapsed_time[obj] = time.time()
+
+#stops an animation and reverts to original texture
+def stopAnimation(obj):
+    ani_current_id[obj] = None
+    ani_current_step[obj] = None
+    ani_elapsed_time[obj] = None
+    texture_id[obj] = backup_texture[obj]
 
 #Check collision between two objects
 def checkCollision(obj1, obj2, offx=None, offy=None):
@@ -170,7 +193,11 @@ def createObject(
                     _font_replaces = DEFAULT_FONT_REPLACES,
                     _takes_damage = DEFAULT_TAKES_DAMAGE,
                     _inflicts_damage = DEFAULT_INFLICTS_DAMAGE,
-                    _damage = DEFAULT_DAMAGE
+                    _damage = DEFAULT_DAMAGE,
+                    _ani_current_step = DEFAULT_ANI_CURRENT_STEP,
+                    _ani_current_id = DEFAULT_ANI_CURRENT_ID,
+                    _ani_elapsed_time = DEFAULT_ANI_ELAPSED_TIME,
+                    _tag = DEFAULT_TAG
                 ):
     id = freeObjectID()
     x[id] = _x
@@ -192,6 +219,11 @@ def createObject(
     takes_damage[id] = _takes_damage
     inflicts_damage[id] = _inflicts_damage
     damage[id] = _damage
+    ani_elapsed_time[id] = _ani_elapsed_time
+    ani_current_id[id] = _ani_current_id
+    ani_current_step[id] = _ani_current_step
+    tag[id] = _tag
+    backup_texture[id] = texture_id[id]
 
 #Z Layers
 Z_LAYER_COUNT = 10
@@ -215,6 +247,7 @@ ID_TEXTURE_INGAMEUIBG = 2
 ID_TEXTURE_POINT = 3
 ID_TEXTURE_WEAPON = 4
 ID_TEXTURE_CHARGE = 5
+ID_TEXTURE_PLAYERHIT = 6
 
 #Texture array
 texture = [None] * TEXTURE_COUNT
@@ -224,6 +257,7 @@ texture[ID_TEXTURE_INGAMEUIBG] = pygame.image.load("data/textures/ingame_ui_bg.p
 texture[ID_TEXTURE_POINT] = pygame.image.load("data/textures/point.png")
 texture[ID_TEXTURE_WEAPON] = pygame.image.load("data/textures/weapon.png")
 texture[ID_TEXTURE_CHARGE] = pygame.image.load("data/textures/charge.png")
+texture[ID_TEXTURE_PLAYERHIT] = pygame.image.load("data/textures/playerhit.png")
 
 #Collision Mask array (IDs same as textures)
 mask = [None] * TEXTURE_COUNT
@@ -232,6 +266,23 @@ mask[ID_TEXTURE_INGAMEUIBG] = pygame.mask.from_surface(texture[ID_TEXTURE_INGAME
 mask[ID_TEXTURE_POINT] = pygame.mask.from_surface(texture[ID_TEXTURE_POINT])
 mask[ID_TEXTURE_WEAPON] = pygame.mask.from_surface(texture[ID_TEXTURE_WEAPON])
 mask[ID_TEXTURE_CHARGE] = pygame.mask.from_surface(texture[ID_TEXTURE_CHARGE])
+mask[ID_TEXTURE_PLAYERHIT] = pygame.mask.from_surface(texture[ID_TEXTURE_PLAYERHIT])
+
+#Animation array and variables
+ANIMATION_COUNT = 50
+ani_list = [[]] * ANIMATION_COUNT
+ani_time_list = [[]] * ANIMATION_COUNT
+
+ANIMATION_PLAYERHIT_ID = 0
+
+ani_list[ANIMATION_PLAYERHIT_ID] = [
+    ID_TEXTURE_PLAYERHIT, ID_TEXTURE_PLAYER, ID_TEXTURE_PLAYERHIT, ID_TEXTURE_PLAYER, ID_TEXTURE_PLAYERHIT,
+    ID_TEXTURE_PLAYER, ID_TEXTURE_PLAYERHIT, ID_TEXTURE_PLAYER, ID_TEXTURE_PLAYERHIT, ID_TEXTURE_PLAYER
+]
+
+ani_time_list[ANIMATION_PLAYERHIT_ID] = [
+    0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25
+]
 
 #Create the player
 createObject(
@@ -242,7 +293,8 @@ _texture_id=ID_TEXTURE_PLAYER,
 _keycontrol=True,
 _collide=True,
 _powerup_pickup=True,
-_takes_damage=True
+_takes_damage=True,
+_tag=["player"]
 )
 
 #Create the enemy
@@ -389,6 +441,29 @@ while running_flag:
         life.add_value(1)
     
 
+    #Manage animations
+    for obj in range(OBJECT_COUNT_MAX):
+
+        if not on[obj]:
+            continue
+
+        anim = ani_current_id[obj]
+        step = ani_current_step[obj]
+        
+        if anim == None:
+            continue
+        
+        if step == len(ani_list[anim]):
+            stopAnimation(obj)
+            continue
+
+        texture_id[obj] = ani_list[anim][step]
+
+        if (time.time() - ani_elapsed_time[obj] >= ani_time_list[anim][step]):
+            ani_current_step[obj] += 1
+            ani_elapsed_time[obj] = time.time()
+
+
     #Manage damage
     for obj1 in range(OBJECT_COUNT_MAX):
         
@@ -407,12 +482,15 @@ while running_flag:
             #obj2 = hazard
 
             #IMMORTALITY TIME
-            if time.time() - last_hit_timestamp < 2.5:
+            if time.time() - last_hit_timestamp < POST_HIT_IMMORTALITY:
                 continue
 
             if checkCollision(obj1, obj2):
                 last_hit_timestamp = time.time()
                 life.add_value(-damage[obj2])
+                
+                if "player" in tag[obj1]:
+                    startAnimation(obj1, ANIMATION_PLAYERHIT_ID)
 
 
     #Manage powerups
