@@ -1,3 +1,10 @@
+# TODO: nuova proprieta' degli oggetti (moto lineare a velocita' x)
+# TODO: nuova proprieta' degli oggetti (moto accellerato a velocita' x accel y)
+# TODO: dialoghi (indagare come fare font renderer che va a capo)
+# TODO: vedere come funziona musica su pygame
+# TODO: iniziare a pensare a un level editor
+
+
 #Pointer recreation in python (only way to recreate pointer concept)
 #this one is useful when displaying variable values in rendered fonts
 class Pointer():
