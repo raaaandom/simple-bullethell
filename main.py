@@ -284,7 +284,7 @@ while running_flag:
     #Toggle fullscreen
     if pressed_keys[KEY_FULLSCREEN] and not key_fullscreen_flag:
         
-        fullscreen_flag = True
+        key_fullscreen_flag = True
 
         if fullscreen_status:
             pygame.display.set_mode(WINDOW_SIZE)
@@ -294,7 +294,7 @@ while running_flag:
         fullscreen_status = not fullscreen_status
 
     elif not pressed_keys[KEY_FULLSCREEN] and key_fullscreen_flag:
-        fullscreen_flag = False
+        key_fullscreen_flag = False
         
     #keyboard movement
     for obj in range(OBJECT_COUNT_MAX):
