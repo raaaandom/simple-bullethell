@@ -33,7 +33,7 @@ pygame.init()
 
 #FPS related stuff
 CLOCK_TOOL = pygame.time.Clock()
-CLOCK_FPS_LIMIT = 144
+CLOCK_FPS_LIMIT = 60
 
 #Keybinds
 KEY_MOVE_LEFT = pygame.K_LEFT
