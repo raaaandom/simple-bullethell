@@ -281,6 +281,7 @@ mask[ID_TEXTURE_PLAYERHIT] = pygame.mask.from_surface(texture[ID_TEXTURE_PLAYERH
 ANIMATION_COUNT = 50
 ani_list = [[]] * ANIMATION_COUNT
 ani_time_list = [[]] * ANIMATION_COUNT
+ani_loop = [False] * ANIMATION_COUNT
 
 ANIMATION_PLAYERHIT_ID = 0
 
@@ -288,10 +289,10 @@ ani_list[ANIMATION_PLAYERHIT_ID] = [
     ID_TEXTURE_PLAYERHIT, ID_TEXTURE_PLAYER, ID_TEXTURE_PLAYERHIT, ID_TEXTURE_PLAYER, ID_TEXTURE_PLAYERHIT,
     ID_TEXTURE_PLAYER, ID_TEXTURE_PLAYERHIT, ID_TEXTURE_PLAYER, ID_TEXTURE_PLAYERHIT, ID_TEXTURE_PLAYER
 ]
-
 ani_time_list[ANIMATION_PLAYERHIT_ID] = [
     0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25
 ]
+ani_loop[ANIMATION_PLAYERHIT_ID] = False
 
 #Create the player
 createObject(
@@ -462,7 +463,11 @@ while running_flag:
         if anim == None:
             continue
         
-        if step == len(ani_list[anim]):
+        if ani_loop[anim] and step == len(ani_list[anim]):
+            ani_current_step[obj] = 0
+            continue
+
+        if not ani_loop[anim] and step == len(ani_list[anim]):
             stopAnimation(obj)
             continue
 
