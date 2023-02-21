@@ -1,4 +1,3 @@
-# TODO: nuova proprieta' degli oggetti (moto lineare a velocita' x)
 # TODO: nuova proprieta' degli oggetti (moto accellerato a velocita' x accel y)
 # TODO: dialoghi (indagare come fare font renderer che va a capo)
 # TODO: vedere come funziona musica su pygame
@@ -82,6 +81,9 @@ STARTING_GOAL = 50
 STARTING_LIFE = 3
 POST_HIT_IMMORTALITY = 2.5
 
+#tech stats
+CLEAR_IF_OUT_OFFSET = 250
+
 #immortality frame stuff
 last_hit_timestamp = time.time()
 
@@ -118,6 +120,7 @@ DEFAULT_ANI_CURRENT_STEP = None
 DEFAULT_TAG = []
 DEFAULT_BACKUP_TEXTURE = None
 DEFAULT_LINEAR_MOVE = None
+DEFAULT_CLEAR_IF_OUT = False
 
 #Object arrays
 OBJECT_COUNT_MAX = 500
@@ -146,6 +149,7 @@ ani_elapsed_time = [DEFAULT_ANI_ELAPSED_TIME] * OBJECT_COUNT_MAX    # elapsed ti
 tag = [DEFAULT_TAG] * OBJECT_COUNT_MAX                              # tags used to quickly access a type of obj
 backup_texture = [DEFAULT_BACKUP_TEXTURE] * OBJECT_COUNT_MAX        # used when restoring a static frame from ani
 linear_move = [DEFAULT_LINEAR_MOVE] * OBJECT_COUNT_MAX              # vec2 with speed values used in linear motion
+clear_if_out = [DEFAULT_CLEAR_IF_OUT] * OBJECT_COUNT_MAX            # should the obj get cleared when exiting the screen?
 
 #starts an animation on the desired obj
 def startAnimation(obj, aniID):
@@ -209,7 +213,8 @@ def createObject(
                     _ani_current_id = DEFAULT_ANI_CURRENT_ID,
                     _ani_elapsed_time = DEFAULT_ANI_ELAPSED_TIME,
                     _tag = DEFAULT_TAG,
-                    _linear_move = DEFAULT_LINEAR_MOVE
+                    _linear_move = DEFAULT_LINEAR_MOVE,
+                    _clear_if_out = DEFAULT_CLEAR_IF_OUT
                 ):
     id = freeObjectID()
     x[id] = _x
@@ -237,6 +242,7 @@ def createObject(
     tag[id] = _tag
     backup_texture[id] = texture_id[id]
     linear_move[id] = _linear_move
+    clear_if_out[id] = _clear_if_out
 
 #Z Layers
 Z_LAYER_COUNT = 10
@@ -314,12 +320,13 @@ _tag=["player"]
 #Create the enemy
 createObject(
 _x=700,
-_y=0,
+_y=-100,
 _z=3,
 _texture_id=ID_TEXTURE_PLAYER,
 _inflicts_damage=True,
 _damage = 1,
-_linear_move = [0,100]
+_linear_move = [0,500],
+_clear_if_out=True
 )
 
 #Create the ingame ui bg
@@ -455,6 +462,18 @@ while running_flag:
         points_goal.mul_value(2)
         life.add_value(1)
     
+
+    #Clear if out property
+    for obj in range(OBJECT_COUNT_MAX):
+
+        if not clear_if_out[obj] and not on[obj]:
+            continue
+    
+        if x[obj] <= -CLEAR_IF_OUT_OFFSET or x[obj] >= WINDOW_WIDTH + CLEAR_IF_OUT_OFFSET:
+            deleteObject(obj)
+        if y[obj] <= -CLEAR_IF_OUT_OFFSET or y[obj] >= WINDOW_HEIGHT + CLEAR_IF_OUT_OFFSET:
+            deleteObject(obj)
+
 
     #Manage animations
     for obj in range(OBJECT_COUNT_MAX):
