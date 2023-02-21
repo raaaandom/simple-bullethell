@@ -117,6 +117,7 @@ DEFAULT_ANI_ELAPSED_TIME = None
 DEFAULT_ANI_CURRENT_STEP = None
 DEFAULT_TAG = []
 DEFAULT_BACKUP_TEXTURE = None
+DEFAULT_LINEAR_MOVE = None
 
 #Object arrays
 OBJECT_COUNT_MAX = 500
@@ -144,6 +145,7 @@ ani_current_step = [DEFAULT_ANI_CURRENT_STEP] * OBJECT_COUNT_MAX    # current an
 ani_elapsed_time = [DEFAULT_ANI_ELAPSED_TIME] * OBJECT_COUNT_MAX    # elapsed time since last ani step
 tag = [DEFAULT_TAG] * OBJECT_COUNT_MAX                              # tags used to quickly access a type of obj
 backup_texture = [DEFAULT_BACKUP_TEXTURE] * OBJECT_COUNT_MAX        # used when restoring a static frame from ani
+linear_move = [DEFAULT_LINEAR_MOVE] * OBJECT_COUNT_MAX              # vec2 with speed values used in linear motion
 
 #starts an animation on the desired obj
 def startAnimation(obj, aniID):
@@ -206,7 +208,8 @@ def createObject(
                     _ani_current_step = DEFAULT_ANI_CURRENT_STEP,
                     _ani_current_id = DEFAULT_ANI_CURRENT_ID,
                     _ani_elapsed_time = DEFAULT_ANI_ELAPSED_TIME,
-                    _tag = DEFAULT_TAG
+                    _tag = DEFAULT_TAG,
+                    _linear_move = DEFAULT_LINEAR_MOVE
                 ):
     id = freeObjectID()
     x[id] = _x
@@ -233,6 +236,7 @@ def createObject(
     ani_current_step[id] = _ani_current_step
     tag[id] = _tag
     backup_texture[id] = texture_id[id]
+    linear_move[id] = _linear_move
 
 #Z Layers
 Z_LAYER_COUNT = 10
@@ -310,11 +314,12 @@ _tag=["player"]
 #Create the enemy
 createObject(
 _x=700,
-_y=400,
+_y=0,
 _z=3,
 _texture_id=ID_TEXTURE_PLAYER,
 _inflicts_damage=True,
-_damage = 1
+_damage = 1,
+_linear_move = [0,100]
 )
 
 #Create the ingame ui bg
@@ -505,6 +510,16 @@ while running_flag:
                 
                 if "player" in tag[obj1]:
                     startAnimation(obj1, ANIMATION_PLAYERHIT_ID)
+
+
+    #Linear movement
+    for obj in range(OBJECT_COUNT_MAX):
+        
+        if linear_move[obj] == None or not on[obj]:
+            continue
+
+        x[obj] += linear_move[obj][0] * clockfix_dt
+        y[obj] += linear_move[obj][1] * clockfix_dt
 
 
     #Manage powerups
