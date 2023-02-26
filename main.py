@@ -305,62 +305,73 @@ ani_time_list[ANIMATION_PLAYERHIT_ID] = [
 ani_loop[ANIMATION_PLAYERHIT_ID] = False
 
 #Create the player
-createObject(
-_x=800,
-_y=400,
-_z=4,
-_texture_id=ID_TEXTURE_PLAYER,
-_keycontrol=True,
-_collide=True,
-_powerup_pickup=True,
-_takes_damage=True,
-_tag=["player"]
-)
+def spawnPlayer(x,y):
+    createObject(
+    _x=x,
+    _y=y,
+    _z=4,
+    _texture_id=ID_TEXTURE_PLAYER,
+    _keycontrol=True,
+    _collide=True,
+    _powerup_pickup=True,
+    _takes_damage=True,
+    _tag=["player"]
+    )
 
-#Create the enemy
-createObject(
-_x=700,
-_y=-100,
-_z=3,
-_texture_id=ID_TEXTURE_PLAYER,
-_inflicts_damage=True,
-_damage = 1,
-_linear_move = [0,500],
-_clear_if_out=True
-)
+# X-Locked bullets at linear speed
+def spawnBullet1(x,y,speedx,speedy):
+    createObject(
+    _x=700,
+    _y=-100,
+    _z=3,
+    _texture_id=ID_TEXTURE_PLAYER,
+    _inflicts_damage=True,
+    _damage = 1,
+    _linear_move = [speedx,speedy],
+    _clear_if_out=True
+    )
 
-#Create the ingame ui bg
-createObject(
-_x=0,
-_y=0,
-_z=8,
-_texture_id=ID_TEXTURE_INGAMEUIBG,
-_collide=True
-)
+#Create the ingame ui
+def spawnGameUI():
 
-#Create ui text
-createObject(
-_x=50,
-_y=50,
-_z=9,
-_font_id=ID_FONT_CIRNO,
-_font_text="Points: $x / $x",
-_font_color=(255,255,255),
-_font_aa=True,
-_font_replaces=[points, points_goal]
-)
+    #ui base
+    createObject(
+    _x=0,
+    _y=0,
+    _z=8,
+    _texture_id=ID_TEXTURE_INGAMEUIBG,
+    _collide=True
+    )
 
-#Create ui text
-createObject(
-_x=50,
-_y=75,
-_z=9,
-_font_id=ID_FONT_CIRNO,
-_font_text="Health: $x",
-_font_color=(255,255,255),
-_font_aa=True,
-_font_replaces=[life]
-)
+    #point text
+    createObject(
+    _x=50,
+    _y=50,
+    _z=9,
+    _font_id=ID_FONT_CIRNO,
+    _font_text="Points: $x / $x",
+    _font_color=(255,255,255),
+    _font_aa=True,
+    _font_replaces=[points, points_goal]
+    )
+
+    #health text
+    createObject(
+    _x=50,
+    _y=75,
+    _z=9,
+    _font_id=ID_FONT_CIRNO,
+    _font_text="Health: $x",
+    _font_color=(255,255,255),
+    _font_aa=True,
+    _font_replaces=[life]
+    )
+
+
+# INIT THE GAME OBJECTS
+spawnGameUI()
+spawnPlayer(700,400)
+
 
 # !!! NEEDS TO BE LAST INIT CALL !!!
 clockfix_now = 0
